@@ -1,9 +1,11 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 
 const app = express();
 
 app.use(bodyParser.json());
+app.use(cors());
 
 const database = {
 	users: [
@@ -46,8 +48,9 @@ app.get('/profile/:id', (req,res) => {
 })
 
 app.post('/signin', (req, res) => {
-	if(req.body.password === database.users[0].password) {
-		res.json('success');
+	if(req.body.password === database.users[0].password 
+		&& req.body.email === database.users[0].email) {
+		res.json(database.users[0]);
 	} else {
 		res.status(400).json('error retrieving account');
 	}
@@ -63,10 +66,10 @@ app.post('/register', (req, res) => {
 		entries: 0,
 		joined: new Date()
 	})
-	res.json('added new user ' + name);
+	res.json('added new user ' + req.body);
 })
 
-app.post('/image', (req,res) => {
+app.put('/image', (req,res) => {
 	const { id } = req.body;
 	let found = false;
 	database.users.forEach(user => {
