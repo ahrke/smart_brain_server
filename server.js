@@ -1,6 +1,17 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const knex = require('knex');
+
+const db = knex({
+	client: 'pg',
+	connection: {
+		host: '127.0.0.1',
+		user: 'david',
+		password: '',
+		database: 'smart-brain'
+	}
+})
 
 const app = express();
 
@@ -34,17 +45,16 @@ app.get('/', (req, res) => {
 
 app.get('/profile/:id', (req,res) => {
 	const { id } = req.params;
-	const found = false;
-	database.users.forEach(user => {
-		if(user.id === id) {
-			found = true;
-			res.json(user);
-		} 
-
-		if(!found) {
-			res.status(404).json('no user found');
-		}
+	db.select('*').from('users').where({
+		id: id
 	})
+		.then(user => {
+			if(user.length) {
+				res.json(user[0])
+			} else {
+				res.status(400).json('user not found')
+			}
+		})
 })
 
 app.post('/signin', (req, res) => {
@@ -58,15 +68,15 @@ app.post('/signin', (req, res) => {
 
 app.post('/register', (req, res) => {
 	const { email, name, password } = req.body;
-	database.users.push({
-		id: '100',
-		name: name,
-		email: email,
-		password: password,
-		entries: 0,
-		joined: new Date()
-	})
-	res.json('added new user ' + req.body);
+	db('users')
+		.returning('*')
+		.insert({
+			name: name,
+			email: email,
+			joined: new Date()
+		})
+		.then(user => res.json(user[0]))
+		.catch(err => res.status(400).json("unable to register"))
 })
 
 app.put('/image', (req,res) => {
