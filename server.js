@@ -32,6 +32,7 @@ app.get('/profile/:id', )
 app.post('/signin', signin.handleSignin(db,bcrypt));
 app.post('/register', register.handleRegistration(db, bcrypt));
 app.put('/image', image.handleImage(db));
+app.post('/imageurl', image.handleApiCall());
 
 app.listen(3000, () => {
 	console.log('app is running on port 3000');
